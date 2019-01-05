@@ -9,6 +9,16 @@ in an automated manner.
 
 When another error happens, the standard error output will be printed.
 
+Installing
+----------
+
+```
+git clone https://github.com/samueldr/nix-universal-prefetch.git
+cd nix-universal-prefetch
+nix-env -if .
+```
+
+
 Limitations
 -----------
 
