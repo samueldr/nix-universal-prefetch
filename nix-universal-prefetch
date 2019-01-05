@@ -1,0 +1,109 @@
+#!/usr/bin/env nix-shell
+#!nix-shell -p ruby -i ruby
+
+require "json"
+require "open3"
+require "optparse"
+
+PROGRAM="nix-universal-prefetch"
+
+# This expression is used to introspect nixpkgs fetchers.
+FETCHERS_LIST = <<EOF
+with import <nixpkgs> {};
+  let
+    # Keep only functions and functors.
+    isFn = fn: lib.isFunction (normalize fn);
+    # Unwraps functors' functions to look at their args.
+    normalize = fn: if fn ? __functor then fn.__functor{} else fn;
+    # Known fetchers
+    fetchers = builtins.filter (attr: lib.hasPrefix "fetch" attr && isFn pkgs."${attr}") (lib.attrNames pkgs);
+  in
+  builtins.map
+    # returns a list of pairs, function name, arguments.
+    (f: [f (lib.functionArgs (normalize pkgs."${f}"))])
+    fetchers
+EOF
+
+# Returns an object {fetcher_name: {parameter: has_default_value}}.
+def list_fetchers()
+  out, _ = Open3.capture2("nix", "eval", "--json", "(#{FETCHERS_LIST})")
+  JSON.parse(out).to_h
+end
+
+$fetchers = list_fetchers()
+
+# Default options (none)
+options = {}
+
+# Some basic options, like allowing listing known fetchers.
+OptionParser.new do |opts|
+  opts.banner = "Usage: #{PROGRAM} [options] <fetcher> [parameters]"
+
+  opts.on("-l", "--list-fetchers", "List fetchers") do
+    puts "Fetchers:"
+    $fetchers.each do |fetcher_name, args|
+      puts " - #{fetcher_name}"
+    end
+    exit
+  end
+
+  opts.on("-h", "--help", "Prints this help") do
+    puts opts
+    exit
+  end
+
+end.order!
+# order! is used to stop on first non-flag.
+# A bit of a hack, but better than implementing full-blown arguments parsing.
+
+# From here on, it is assumed we have a "command" (a fetcher) as first argument.
+fetcher_name = ARGV.shift
+# Let's pick its arguments.
+fetcher_arguments = $fetchers[fetcher_name]
+
+# Default to giving sha256.
+options = {}
+options["sha256"] = "0000000000000000000000000000000000000000000000000000";
+
+# Build options from the fetcher's arguments.
+OptionParser.new do |opts|
+  opts.banner = "Usage #{PROGRAM} #{fetcher_name} [options]"
+  fetcher_arguments.each do |opt, has_default|
+    opts.on("--#{opt}=VALUE") do |str|
+      options[opt] = str
+    end
+  end
+end.parse!
+
+args = options.map do |name, value|
+  # Abuse the fact that nix strings are directly compatible to serialized JSON strings.
+  %Q{#{name} = #{value.to_json};}
+end.join("\n")
+
+# Forces a fetch to get an error message.
+out, err, status = Open3.capture3(
+  "nix", "build",
+  # Awww... It seems using --argstr on fetcher functions fail at passing sha256 :/
+  # This is why we're building a nix expression inline...
+  "((import <nixpkgs> {}).#{fetcher_name} {#{args}})"
+)
+
+# Find the line of the error message we're interested in.
+err = err.split("\n")
+hash_line, _ = err.grep(/^fixed-output derivation produced path/)
+
+# Oh, probably not the message we want. Error-out!
+unless hash_line then
+  $stderr.puts err.join("\n")
+  exit status.to_i
+end
+
+# Ah! what we wanted.
+data = hash_line.match(
+  /fixed-output derivation produced path '([^\s]+)' with ([^\s]+) hash '([[:alnum:]]+)' instead of the expected hash '([[:alnum:]]+)'/
+)
+
+# Let's print the hash.
+puts data[3]
+
+# vim: ft=ruby
