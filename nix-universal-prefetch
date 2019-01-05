@@ -65,7 +65,10 @@ fetcher_arguments = $fetchers[fetcher_name]
 options = {}
 options["sha256"] = "0000000000000000000000000000000000000000000000000000";
 
+# Parse **all** options given before quitting.
+# This allows appending `--help` to an invalid invocation
 $err = false
+
 # Build options from the fetcher's arguments.
 while ARGV.length > 0 do
   arg = ARGV.shift
@@ -98,6 +101,7 @@ while ARGV.length > 0 do
   options[arg] = ARGV.shift
 end
 
+# Eh, we apparently had trouble parsing arguments.
 exit 1 if $err
 
 args = options.map do |name, value|
