@@ -56,6 +56,12 @@ end.order!
 # order! is used to stop on first non-flag.
 # A bit of a hack, but better than implementing full-blown arguments parsing.
 
+unless ARGV.length > 0 then
+  puts "Usage: #{PROGRAM} [options] <fetcher> [parameters]"
+  puts "Use --list-fetchers to list known fetchers."
+  exit 1
+end
+
 # From here on, it is assumed we have a "command" (a fetcher) as first argument.
 fetcher_name = ARGV.shift
 # Let's pick its arguments.
