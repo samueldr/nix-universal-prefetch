@@ -8,3 +8,65 @@ The output is *only* of the hash when it works, allowing it to be (ab)used
 in an automated manner.
 
 When another error happens, the standard error output will be printed.
+
+* * *
+
+Example
+-------
+
+```
+ $ ./universal-prefetch -l
+Fetchers:
+ - fetchCrate
+ - fetchDockerConfig
+ - fetchDockerLayer
+ - fetchFromBitbucket
+ - fetchFromGitHub
+ - fetchFromGitLab
+ - fetchFromRepoOrCz
+ - fetchFromSavannah
+ - fetchHex
+ - fetchMavenArtifact
+ - fetchNuGet
+ - fetchRepoProject
+ - fetchbower
+ - fetchbzr
+ - fetchcvs
+ - fetchdarcs
+ - fetchdocker
+ - fetchegg
+ - fetchfossil
+ - fetchgit
+ - fetchgitLocal
+ - fetchgitPrivate
+ - fetchgx
+ - fetchhg
+ - fetchipfs
+ - fetchmtn
+ - fetchpatch
+ - fetchs3
+ - fetchsvn
+ - fetchsvnrevision
+ - fetchsvnssh
+ - fetchurl
+ - fetchurlBoot
+ - fetchzip
+
+ $ ./universal-prefetch fetchFromGitHub --help
+fetchFromGitHub: [options]
+        --fetchSubmodules=VALUE
+        --githubBase=VALUE
+        --name=VALUE
+        --owner=VALUE
+        --private=VALUE
+        --repo=VALUE
+        --rev=VALUE
+        --varPrefix=VALUE
+
+ $ ./universal-prefetch fetchFromGitHub --owner NixOS --repo nixpkgs
+error: 'fetchFromGitHub' at /etc/nixos/nixpkgs/pkgs/top-level/all-packages.nix:236:21 called without required argument 'rev', at (string):1:2
+
+ $ ./universal-prefetch fetchFromGitHub --owner NixOS --repo nixpkgs --rev master
+04i1xrzyl3i3b1kmfx6f5z78sc66hwzyxd3v6i4zfqavvarw3w6s
+
+```
