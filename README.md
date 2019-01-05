@@ -22,7 +22,7 @@ Example
 -------
 
 ```
- $ ./universal-prefetch -l
+ $ nix-universal-prefetch -l
 Fetchers:
  - fetchCrate
  - fetchDockerConfig
@@ -59,7 +59,7 @@ Fetchers:
  - fetchurlBoot
  - fetchzip
 
- $ ./universal-prefetch fetchFromGitHub --help
+ $ nix-universal-prefetch fetchFromGitHub --help
 fetchFromGitHub: [options]
         --fetchSubmodules=VALUE
         --githubBase=VALUE
@@ -70,10 +70,10 @@ fetchFromGitHub: [options]
         --rev=VALUE
         --varPrefix=VALUE
 
- $ ./universal-prefetch fetchFromGitHub --owner NixOS --repo nixpkgs
+ $ nix-universal-prefetch fetchFromGitHub --owner NixOS --repo nixpkgs
 error: 'fetchFromGitHub' at /etc/nixos/nixpkgs/pkgs/top-level/all-packages.nix:236:21 called without required argument 'rev', at (string):1:2
 
- $ ./universal-prefetch fetchFromGitHub --owner NixOS --repo nixpkgs --rev master
+ $ nix-universal-prefetch fetchFromGitHub --owner NixOS --repo nixpkgs --rev master
 04i1xrzyl3i3b1kmfx6f5z78sc66hwzyxd3v6i4zfqavvarw3w6s
 
 ```
