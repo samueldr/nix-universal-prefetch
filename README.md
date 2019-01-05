@@ -9,6 +9,13 @@ in an automated manner.
 
 When another error happens, the standard error output will be printed.
 
+Limitations
+-----------
+
+It cannot print the *complete* list of arguments for composed fetchers (most fetchers are composed).
+
+However, passing those unlisted additional arguments to those fetchers will work.
+
 * * *
 
 Example

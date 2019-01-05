@@ -65,15 +65,40 @@ fetcher_arguments = $fetchers[fetcher_name]
 options = {}
 options["sha256"] = "0000000000000000000000000000000000000000000000000000";
 
+$err = false
 # Build options from the fetcher's arguments.
-OptionParser.new do |opts|
-  opts.banner = "Usage #{PROGRAM} #{fetcher_name} [options]"
-  fetcher_arguments.each do |opt, has_default|
-    opts.on("--#{opt}=VALUE") do |str|
-      options[opt] = str
-    end
+while ARGV.length > 0 do
+  arg = ARGV.shift
+  unless arg.match(/^--/) then
+    $stderr.puts "error: don't know what to do with argument '#{arg}'"
+    $err = true;
+    next
   end
-end.parse!
+  arg = arg[2..-1]
+
+  if arg == "help" then
+    puts "Usage #{PROGRAM} #{fetcher_name} [options]"
+    with, without = fetcher_arguments.partition { |arg_name, has_default_value| has_default_value }
+    puts ""
+    puts "ALL options require a value."
+    puts ""
+    puts "Required own options:"
+    without.to_h.each do |arg_name, _|
+      puts "  --#{arg_name}"
+    end
+    puts ""
+    puts "Other options:"
+    with.to_h.each do |arg_name, _|
+      puts "  --#{arg_name}"
+    end
+
+    exit 0
+  end
+
+  options[arg] = ARGV.shift
+end
+
+exit 1 if $err
 
 args = options.map do |name, value|
   # Abuse the fact that nix strings are directly compatible to serialized JSON strings.
