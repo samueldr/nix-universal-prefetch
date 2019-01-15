@@ -18,6 +18,13 @@ cd nix-universal-prefetch
 nix-env -if .
 ```
 
+Testing
+-------
+
+```
+.../nix-universal-prefetch $ nix-build ./test
+```
+
 
 Limitations
 -----------
