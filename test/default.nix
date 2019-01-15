@@ -11,8 +11,11 @@ let
       (
       PATH=${nix}/bin:$PATH
       nix-instantiate --version
+      printf "\n\nSanity check:\n"
       ${ruby}/bin/ruby ${../nix-universal-prefetch} --help
+      printf "\n\nbuiltins.fetchurl:\n"
       ${ruby}/bin/ruby ${../nix-universal-prefetch} builtins.fetchurl --url file:///dev/null
+      printf "\n\nfixed output:\n"
       ${ruby}/bin/ruby ${../nix-universal-prefetch} --raw '${hello_fixed_output}'
       )
     '')
