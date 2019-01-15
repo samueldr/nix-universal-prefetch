@@ -137,10 +137,16 @@ out, err, status = Open3.capture3(
 
 # Here we have multiple patterns that can happen.
 PATTERNS = [
-  # builtins.fetchurl:
+  # builtins.fetchurl (nix 2.1)
   /error: hash mismatch in file downloaded from '([^']+)': got hash 'sha256:(?<hash>[[:alnum:]]+)' instead of the expected hash 'sha256:([[:alnum:]]+)'/,
   # Fixed output derivation (nix 2.1)
   /fixed-output derivation produced path '([^\s]+)' with (?<type>[^\s]+) hash '(?<hash>[[:alnum:]]+)' instead of the expected hash '([[:alnum:]]+)'/,
+
+  # builtins.fetchurl (nix 2.2)
+  /error: hash mismatch in file downloaded from '([^']+)':\n\s+wanted:\s+([[:alnum:]]+):([[:alnum:]]+)\n\s+got:\s+(?<type>[[:alnum:]]+):(?<hash>[[:alnum:]]+)/,
+  # Fixed output derivation (nix 2.2)
+  /hash mismatch in fixed-output derivation '([^']+)':\n\s+wanted:\s+([[:alnum:]]+):([[:alnum:]]+)\n\s+got:\s+(?<type>[[:alnum:]]+):(?<hash>[[:alnum:]]+)/,
+]
 
 # Find the first pattern matching the output
 PATTERNS.each do |patt|
