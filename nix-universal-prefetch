@@ -141,8 +141,9 @@ hash_line, _ = err.grep(/^fixed-output derivation produced path/)
 
 # Oh, probably not the message we want. Error-out!
 unless hash_line then
+  $stderr.puts "nix-universal-prefetch: Couldn't parse the error output..."
   $stderr.puts err.join("\n")
-  exit status.to_i
+  exit 1
 end
 
 # Ah! what we wanted.
