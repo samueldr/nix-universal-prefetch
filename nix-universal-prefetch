@@ -135,23 +135,25 @@ out, err, status = Open3.capture3(
   "(#{prefix}#{fetcher_name}) {#{args}}"
 )
 
-# Find the line of the error message we're interested in.
-err = err.split("\n")
-hash_line, _ = err.grep(/^fixed-output derivation produced path/)
+# Here we have multiple patterns that can happen.
+PATTERNS = [
+  # builtins.fetchurl:
+  /error: hash mismatch in file downloaded from '([^']+)': got hash 'sha256:(?<hash>[[:alnum:]]+)' instead of the expected hash 'sha256:([[:alnum:]]+)'/,
+  # Fixed output derivation (nix 2.1)
+  /fixed-output derivation produced path '([^\s]+)' with (?<type>[^\s]+) hash '(?<hash>[[:alnum:]]+)' instead of the expected hash '([[:alnum:]]+)'/,
 
-# Oh, probably not the message we want. Error-out!
-unless hash_line then
-  $stderr.puts "nix-universal-prefetch: Couldn't parse the error output..."
-  $stderr.puts err.join("\n")
-  exit 1
+# Find the first pattern matching the output
+PATTERNS.each do |patt|
+  data = err.match(patt) or next
+
+  # Let's print the hash.
+  puts data.named_captures["hash"]
+
+  exit
 end
 
-# Ah! what we wanted.
-data = hash_line.match(
-  /fixed-output derivation produced path '([^\s]+)' with ([^\s]+) hash '([[:alnum:]]+)' instead of the expected hash '([[:alnum:]]+)'/
-)
-
-# Let's print the hash.
-puts data[3]
+$stderr.puts "nix-universal-prefetch: Couldn't parse the error output..."
+$stderr.puts err
+exit 1
 
 # vim: ft=ruby
