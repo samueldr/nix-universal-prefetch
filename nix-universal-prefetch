@@ -34,6 +34,7 @@ $fetchers = list_fetchers()
 
 # Default options
 $raw = false
+$expr = false
 
 # Some basic options, like allowing listing known fetchers.
 OptionParser.new do |opts|
@@ -51,6 +52,10 @@ OptionParser.new do |opts|
     $raw = true
   end
 
+  opts.on("-E", "--expr EXPR", "Even more raw expression. Directly use a nix expression, do not pass go, no magic happens for you.") do |expr|
+    $expr = expr
+  end
+
   opts.on("-h", "--help", "Prints this help") do
     puts opts
     exit
@@ -60,7 +65,7 @@ end.order!
 # order! is used to stop on first non-flag.
 # A bit of a hack, but better than implementing full-blown arguments parsing.
 
-unless ARGV.length > 0 then
+unless $expr or ARGV.length > 0 then
   puts "Usage: #{PROGRAM} [options] <fetcher> [parameters]"
   puts "Use --list-fetchers to list known fetchers."
   exit 1
@@ -121,7 +126,7 @@ end.join("\n")
 
 # We might need to import a nixpkgs unless we try to use a builtin.
 # The builtins are mainly useful for tests.
-prefix = unless $raw or fetcher_name.match(/^builtins\./) then
+prefix = unless $expr or $raw or fetcher_name.match(/^builtins\./) then
     "(import <nixpkgs> {})."
   else
     ""
@@ -132,7 +137,11 @@ out, err, status = Open3.capture3(
   "nix-build", "--no-out-link", "-E",
   # Awww... It seems using --argstr on fetcher functions fail at passing sha256 :/
   # This is why we're building a nix expression inline...
-  "(#{prefix}#{fetcher_name}) {#{args}}"
+  if $expr then
+    $expr
+  else
+    "(#{prefix}#{fetcher_name}) {#{args}}"
+  end
 )
 
 # Here we have multiple patterns that can happen.
