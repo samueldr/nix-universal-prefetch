@@ -1,10 +1,9 @@
 let
   channel = v: import (builtins.fetchTarball "https://nixos.org/channels/${v}/nixexprs.tar.xz") {};
-  jellyfish = channel "nixos-18.09";
+  markhor = channel "nixos-20.03";
   unstable = channel "nixos-unstable";
 in
 {
-  nix_2_1 = jellyfish.nix;
-  nix_2_2 = jellyfish.nixUnstable;
+  nix_2_3 = markhor.nix;
   nix_stable_on_unstable = unstable.nix;
 }
