@@ -9,7 +9,7 @@ PROGRAM="nix-universal-prefetch"
 
 # This expression is used to introspect nixpkgs fetchers.
 FETCHERS_LIST = <<EOF
-with import <nixpkgs> {};
+with import <nixpkgs> { config = { allowAliases = false; }; };
   let
     # Keep only functions and functors.
     isFn = fn: lib.isFunction (normalize fn);
