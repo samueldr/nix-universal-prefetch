@@ -26,7 +26,7 @@ EOF
 
 # Returns an object {fetcher_name: {parameter: has_default_value}}.
 def list_fetchers()
-  out, _ = Open3.capture2("nix", "eval", "--json", "(#{FETCHERS_LIST})")
+  out, _ = Open3.capture2("nix-instantiate", "--strict", "--json", "--eval", "-E", "(#{FETCHERS_LIST})")
   JSON.parse(out).to_h
 end
 
@@ -145,7 +145,7 @@ out, err, status = Open3.capture3(
 )
 
 # Here we have multiple patterns that can happen.
-PATTERNS = [
+patterns = [
   # builtins.fetchurl (nix 2.1)
   /error: hash mismatch in file downloaded from '([^']+)': got hash 'sha256:(?<hash>[[:alnum:]]+)' instead of the expected hash 'sha256:([[:alnum:]]+)'/,
   # Fixed output derivation (nix 2.1)
@@ -155,10 +155,14 @@ PATTERNS = [
   /error: hash mismatch in file downloaded from '([^']+)':\n\s+wanted:\s+([[:alnum:]]+):([[:alnum:]]+)\n\s+got:\s+(?<type>[[:alnum:]]+):(?<hash>[[:alnum:]]+)/,
   # Fixed output derivation (nix 2.2)
   /hash mismatch in fixed-output derivation '([^']+)':\n\s+wanted:\s+([[:alnum:]]+):([[:alnum:]]+)\n\s+got:\s+(?<type>[[:alnum:]]+):(?<hash>[[:alnum:]]+)/,
+  # Fixed output derivation (nix 2.4)
+  /hash mismatch in file downloaded from '([^']+)':\n\s+specified:\s+([^\s]+)\n\s+got:\s+(?<hash>[^\s]+)/,
+  # Fixed output derivation (nix 2.5pre)
+  /hash mismatch in fixed-output derivation '([^']+)':\n\s+specified:\s+([^\s]+)\n\s+got:\s+(?<hash>[^\s]+)/,
 ]
 
 # Find the first pattern matching the output
-PATTERNS.each do |patt|
+patterns.each do |patt|
   data = err.match(patt) or next
 
   # Let's print the hash.
