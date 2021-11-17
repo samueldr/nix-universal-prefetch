@@ -6,4 +6,5 @@ in
 {
   nix_2_3 = markhor.nix;
   nix_stable_on_unstable = unstable.nix;
+  nix_unstable_on_unstable = unstable.nixUnstable;
 }
