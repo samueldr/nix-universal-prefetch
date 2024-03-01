@@ -4,6 +4,7 @@
 require "json"
 require "open3"
 require "optparse"
+require "set"
 
 PROGRAM="nix-universal-prefetch"
 
@@ -119,9 +120,12 @@ end
 # Eh, we apparently had trouble parsing arguments.
 exit 1 if $err
 
+FALSE_VALUES = Set["0", "f", "false", "False", "FALSE"]
+TRUE_VALUES = Set["1", "t", "true", "True", "TRUE"]
+
 args = options.map do |name, value|
   # Abuse the fact that nix strings are directly compatible to serialized JSON strings.
-  %Q{#{name} = #{value.to_json};}
+  %Q{#{name} = #{FALSE_VALUES.include?(value) ? false : (TRUE_VALUES.include?(value) ? true : value.to_json)};}
 end.join("\n")
 
 # We might need to import a nixpkgs unless we try to use a builtin.
